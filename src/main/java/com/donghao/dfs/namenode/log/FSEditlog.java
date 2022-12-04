@@ -6,4 +6,12 @@ package com.donghao.dfs.namenode.log;
  * @author donghao.wu
  */
 public class FSEditlog {
+  /**
+   * 记录editsLog日志
+   * 
+   * @param log 日志内容
+   */
+  public void logEdits(String log) {
+    System.out.println(log);
+  }
 }

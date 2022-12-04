@@ -6,4 +6,13 @@ package com.donghao.dfs.namenode.tools;
  * @author donghoa.wu
  */
 public class FSDirectory {
+  /**
+   * 创建目录
+   * 
+   * @param path 目录路径
+   * @throws Exception
+   */
+  public void mkdir(String path) throws Exception {
+
+  }
 }

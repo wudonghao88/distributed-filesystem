@@ -30,6 +30,8 @@ public class FSNameSystem {
    * @return 是否创建成功
    */
   public Boolean mkdir(String path) throws Exception {
+    directory.mkdir(path);
+    editLog.logEdits("创建了一个目录：" + path);
     return true;
   }
 }
