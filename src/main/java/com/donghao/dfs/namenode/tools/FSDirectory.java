@@ -12,14 +12,14 @@ public class FSDirectory {
   /**
    * 文件目录树
    */
-  private static INodeDirectory dirTree;
+  private INodeDirectory dirTree;
 
   public FSDirectory() {
-    dirTree = new INodeDirectory("/");
+    this.dirTree = new INodeDirectory("/");
   }
 
-  public static synchronized INodeDirectory get() {
-    return dirTree;
+  public synchronized INodeDirectory get() {
+    return this.dirTree;
   }
 
   /**
@@ -34,7 +34,7 @@ public class FSDirectory {
       return;
     }
     String[] paths = path.split("/");
-    synchronized (dirTree) {
+    synchronized (this.dirTree) {
       INodeDirectory parent = null;
       boolean flag = true;
       for (String splitedPath : paths) {
@@ -44,7 +44,7 @@ public class FSDirectory {
         INodeDirectory dir = null;
         if (flag) {
           if (parent == null) {
-            dir = findDirectory(dirTree, splitedPath);
+            dir = findDirectory(this.dirTree, splitedPath);
           } else {
             dir = findDirectory(parent, splitedPath);
           }
@@ -64,10 +64,10 @@ public class FSDirectory {
         }
         if (parent == null && dir == null) {
           INodeDirectory child = new INodeDirectory(splitedPath);
-          if (dirTree.getChildren() == null) {
-            dirTree.setChildren(new ArrayList<>());
+          if (this.dirTree.getChildren() == null) {
+            this.dirTree.setChildren(new ArrayList<>());
           }
-          dirTree.addChild(child);
+          this.dirTree.addChild(child);
           parent = child;
           flag = false;
         }
