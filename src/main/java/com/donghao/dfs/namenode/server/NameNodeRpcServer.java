@@ -2,7 +2,6 @@ package com.donghao.dfs.namenode.server;
 
 /**
  * NameNode的rpc服务的接口
- * 
  * @author donghao.wu
  *
  */
@@ -11,22 +10,20 @@ public class NameNodeRpcServer {
   /**
    * 负责管理元数据的核心组件
    */
-  private final FSNamesystem namesystem;
-
+  private FSNamesystem namesystem;
   /**
    * 负责管理集群中所有的datanode的组件
    */
   private DataNodeManager datanodeManager;
 
   public NameNodeRpcServer(
-      FSNamesystem namesystem,
-      DataNodeManager datanodeManager) {
+          FSNamesystem namesystem,
+          DataNodeManager datanodeManager) {
     this.namesystem = namesystem;
   }
 
   /**
    * 创建目录
-   * 
    * @param path 目录路径
    * @return 是否创建成功
    * @throws Exception
@@ -36,8 +33,7 @@ public class NameNodeRpcServer {
   }
 
   /**
-   * DataNode进行注册
-   * 
+   * datanode进行注册
    * @param ip
    * @param hostname
    * @return
@@ -45,6 +41,17 @@ public class NameNodeRpcServer {
    */
   public Boolean register(String ip, String hostname) throws Exception {
     return datanodeManager.register(ip, hostname);
+  }
+
+  /**
+   * datanode进行心跳
+   * @param ip
+   * @param hostname
+   * @return
+   * @throws Exception
+   */
+  public Boolean heartbeat(String ip, String hostname) throws Exception {
+    return datanodeManager.heartbeat(ip, hostname);
   }
 
   /**
