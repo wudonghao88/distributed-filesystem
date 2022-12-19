@@ -1,11 +1,12 @@
-package com.donghao.dfs.namenode.log;
+package com.donghao.dfs.namenode.server;
 
 import java.util.LinkedList;
 
 /**
- * 负责管理editsLog日志写入磁盘的核心组件
+ * 负责管理edits log日志的核心组件
  * 
  * @author donghao.wu
+ *
  */
 public class FSEditlog {
 
@@ -13,31 +14,40 @@ public class FSEditlog {
    * 当前递增到的txid的序号
    */
   private long txidSeq = 0L;
+
   /**
    * 内存双缓冲区
    */
-  private DoubleBuffer editLogBuffer = new DoubleBuffer();
+  private final DoubleBuffer editLogBuffer = new DoubleBuffer();
+
   /**
    * 当前是否在将内存缓冲刷入磁盘中
    */
   private volatile Boolean isSyncRunning = false;
+
   /**
    * 当前是否有线程在等待刷新下一批edits log到磁盘里去
    */
   private volatile Boolean isWaitSync = false;
+
   /**
    * 在同步到磁盘中的最大的一个txid
    */
   private volatile Long syncMaxTxid = 0L;
+
   /**
    * 每个线程自己本地的txid副本
    */
-  private ThreadLocal<Long> localTxid = new ThreadLocal<Long>();
+  private final ThreadLocal<Long> localTxid = new ThreadLocal<Long>();
+
+  // 就会导致说，对一个共享的map数据结构出现多线程并发的读写的问题
+  // 此时对这个map的读写是不是就需要加锁了
+  // private Map<Thread, Long> txidMap = new HashMap<Thread, Long>();
 
   /**
    * 记录edits log日志
-   *
-   * @param content
+   * 
+   * @param log
    */
   public void logEdit(String content) {
     // 这里必须得直接加锁
@@ -45,7 +55,7 @@ public class FSEditlog {
       // 获取全局唯一递增的txid，代表了edits log的序号
       txidSeq++;
       long txid = txidSeq;
-      localTxid.set(txid);
+      localTxid.set(txid); // 放到ThreadLocal里去，相当于就是维护了一份本地线程的副本
 
       // 构造一条edits log对象
       EditLog log = new EditLog(txid, content);
@@ -75,6 +85,7 @@ public class FSEditlog {
         // 那么这个时候来一个线程，他对应的txid = 3，此时他是可以直接返回了
         // 就代表说肯定是他对应的edits log已经被别的线程在刷入磁盘了
         // 这个时候txid = 3的线程就不需要等待了
+        // 获取到本地线程的副本
         long txid = localTxid.get();
         if (txid <= syncMaxTxid) {
           return;
@@ -107,7 +118,6 @@ public class FSEditlog {
       // 此时要同步的txid = 6,7,8,9,10,11,12
       // syncMaxTxid = 12
       syncMaxTxid = editLogBuffer.getSyncMaxTxid();
-
       // 设置当前正在同步到磁盘的标志位
       isSyncRunning = true;
     }
@@ -126,12 +136,14 @@ public class FSEditlog {
 
   /**
    * 代表了一条edits log
+   * 
+   * @author zhonghuashishan
    *
-   * @author donghao.wu
    */
   class EditLog {
 
     long txid;
+
     String content;
 
     public EditLog(long txid, String content) {
@@ -143,8 +155,9 @@ public class FSEditlog {
 
   /**
    * 内存双缓冲
+   * 
+   * @author zhonghuashishan
    *
-   * @author donghao.wu
    */
   class DoubleBuffer {
 
@@ -152,6 +165,7 @@ public class FSEditlog {
      * 是专门用来承载线程写入edits log
      */
     LinkedList<EditLog> currentBuffer = new LinkedList<EditLog>();
+
     /**
      * 专门用来将数据同步到磁盘中去的一块缓冲
      */
@@ -159,7 +173,7 @@ public class FSEditlog {
 
     /**
      * 将edits log写到内存缓冲里去
-     *
+     * 
      * @param log
      */
     public void write(EditLog log) {
@@ -177,7 +191,7 @@ public class FSEditlog {
 
     /**
      * 获取sync buffer缓冲区里的最大的一个txid
-     *
+     * 
      * @return
      */
     public Long getSyncMaxTxid() {

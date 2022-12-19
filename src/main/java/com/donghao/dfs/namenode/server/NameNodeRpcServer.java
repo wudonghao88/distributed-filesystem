@@ -1,22 +1,57 @@
 package com.donghao.dfs.namenode.server;
 
-import com.donghao.dfs.namenode.tools.FSNameSystem;
-
 /**
- * namenoderpc接口
+ * NameNode的rpc服务的接口
+ * 
+ * @author donghao.wu
+ *
  */
 public class NameNodeRpcServer {
-  private FSNameSystem nameSystem;
 
-  public NameNodeRpcServer(FSNameSystem nameSystem) {
-    this.nameSystem = nameSystem;
+  /**
+   * 负责管理元数据的核心组件
+   */
+  private final FSNamesystem namesystem;
+
+  /**
+   * 负责管理集群中所有的datanode的组件
+   */
+  private DataNodeManager datanodeManager;
+
+  public NameNodeRpcServer(
+      FSNamesystem namesystem,
+      DataNodeManager datanodeManager) {
+    this.namesystem = namesystem;
   }
 
+  /**
+   * 创建目录
+   * 
+   * @param path 目录路径
+   * @return 是否创建成功
+   * @throws Exception
+   */
   public Boolean mkdir(String path) throws Exception {
-    return true;
+    return this.namesystem.mkdir(path);
   }
 
-  public void start() {
-    System.out.println("开始监听指定的端口号,处理发送过来的请求");
+  /**
+   * DataNode进行注册
+   * 
+   * @param ip
+   * @param hostname
+   * @return
+   * @throws Exception
+   */
+  public Boolean register(String ip, String hostname) throws Exception {
+    return datanodeManager.register(ip, hostname);
   }
+
+  /**
+   * 启动这个rpc server
+   */
+  public void start() {
+    System.out.println("开始监听指定的rpc server的端口号，来接收请求");
+  }
+
 }
